@@ -233,13 +233,13 @@ component accessors="true" extends="base" {
 		// This adds support for inline html injected as header/footer (opposed to passing as url)
 		var tmpHeaderFile = var tmpFooterFile = "";
 		if( structKeyExists( arguments.options, "header-html" ) ){
-			options[ "header-html" ] = _localizeHtml( options[ "header-html" ] );
+			options[ "header-html" ] = _parseHtml( options[ "header-html" ] );
 			tmpHeaderFile = "#getTempDir()#_#createUUID()#-header.html";
 			fileWrite( tmpHeaderFile, options[ "header-html" ] );
 			options[ "header-html" ] = tmpHeaderFile;
 		}
 		if( structKeyExists( arguments.options, "footer-html" ) ){
-			options[ "footer-html" ] = _localizeHtml( options[ "footer-html" ] );
+			options[ "footer-html" ] = _parseHtml( options[ "footer-html" ] );
 			tmpFooterFile = "#getTempDir()#_#createUUID()#-footer.html";
 			fileWrite( tmpFooterFile, options[ "footer-html" ] );
 			options[ "footer-html" ] = tmpFooterFile;
@@ -276,7 +276,7 @@ component accessors="true" extends="base" {
 
 	// html can be inline html, or a url. This will pull down the content and properly
 	// parse it for wkhtml consumption. Used for header/footer html.
-	private string function _localizeHtml( html ){
+	private string function _parseHtml( html ){
 		if( left( html, 4 ) == "http" ){
 			var remoteHtml = new Http( url = html ).send().getPrefix();
 			html = '<!doctype html>' & remoteHtml.fileContent;
