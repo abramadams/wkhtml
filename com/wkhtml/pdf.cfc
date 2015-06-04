@@ -26,7 +26,7 @@ component accessors="true" extends="base" {
 
 	public function init( string wkhtmltopdfPath = "wkhtmltopdf", string tempDir = getTempDirectory() ){
 		var tmpPath = "";
-		if( server.os.name == "Linux" || server.os.name == "Linux" ){
+		if( server.os.name == "Unix" || server.os.name == "Linux" ){
 			tmpPath = 'xvfb-run -a -s "-screen 0, 1024x768x24" ';
 		}
 		setWkhtmltopdfPath( tmpPath & wkhtmltopdfPath );
