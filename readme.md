@@ -10,6 +10,7 @@ For other OS installation instructions, see http://wkhtmltopdf.org/.
 
 __Note__: Windows servers do not require additional software (other than wkhtmltopdf)
 
+Once you have wkhtmltopdf (_and xvfb if needed_), simply copy the com/wkhtml folder to wherever your components live.
 ##Usage
 Check out the `index.cfm` file for a basic sample usage. It looks something like:
 ```javascript
