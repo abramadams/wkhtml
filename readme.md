@@ -3,11 +3,11 @@ This library is a simple wrapper for the [wkhtmltopdf](http://wkhtmltopdf.org/) 
 ##Installation
 First you need to install __wkhtmltopdf__.  The instructions will vary depending on your OS, but for those lucky enough to run Ubuntu servers, just do:
 ` sudo apt-get install wkhtmltopdf xvfb`
-Chances if you are on linux you already have wkhtmltopdf installed, however [xvfb - A virtual framebuffer X server for X(http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml) is generally not.
+Chances if you are on linux you already have wkhtmltopdf installed, however [xvfb - A virtual framebuffer X server for X](http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml) is generally not.
 For other OS installation instructions, see http://wkhtmltopdf.org/.
 __Note__: Windows servers do not require additional software (other than wkhtmltopdf)
 
-##Use
+##Usage
 Check out the `index.cfm` file for a basic sample usage. It looks something like:
 ```javascript
 wkthmltopdf = new com.wkhtml.pdf(); 
