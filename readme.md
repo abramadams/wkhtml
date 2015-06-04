@@ -27,7 +27,9 @@ results = wkhtmltopdf.create(
                 ,"margin-right": "5mm"
                 ,"margin-top": 5
                 ,"orientation": "portrait"
-                ,"encoding": "utf-8"
+                ,"encoding": "utf-8"                
+                ,"header-html": "http://www.sydneytripslipfallcompensation.com/images/header.jpg"
+                ,"footer-html": "<footer style='text-align:center;'>This, my friend, is a cool footer.</footer>"
                 ,"user-style-sheet": expandPath("print.css")
             },
             writeToFile = false, // true will write the file and return a struct containing the path (and other info)
