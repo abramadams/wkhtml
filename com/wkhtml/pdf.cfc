@@ -226,21 +226,23 @@ component accessors="true" extends="base" {
 			throw("You need to provide either a URL or HTML string to convert to pdf");
 		}
 		if( len( trim( html ) ) ){
-			var tmpFile = "#getTempDir()#/_#createUUID()#.html";
+			var tmpFile = "#getTempDir()#_#createUUID()#.html";
 			fileWrite( tmpFile, html );
 			arguments.url = tmpFile;
 		}
 		// This adds support for inline html injected as header/footer (opposed to passing as url)
 		var tmpHeaderFile = var tmpFooterFile = "";
-		if( structKeyExists( arguments.options, "header-html" ) && left( options["header-html"], 4 ) == "http" ){
-			tmpHeaderFile = "#getTempDir()#/_#createUUID()#-header.html";
-			fileWrite( tmpHeaderFile, options["header-html"] );
-			options["header-html"] = tmpHeaderFile;
+		if( structKeyExists( arguments.options, "header-html" ) ){
+			options[ "header-html" ] = _localizeHtml( options[ "header-html" ] );
+			tmpHeaderFile = "#getTempDir()#_#createUUID()#-header.html";
+			fileWrite( tmpHeaderFile, options[ "header-html" ] );
+			options[ "header-html" ] = tmpHeaderFile;
 		}
-		if( structKeyExists( arguments.options, "footer-html" ) && left( options["footer-html"], 4 ) == "http" ){
-			tmpFooterFile = "#getTempDir()#/_#createUUID()#-footer.html";
-			fileWrite( tmpFooterFile, options["footer-html"] );
-			options["footer-html"] = tmpFooterFile;
+		if( structKeyExists( arguments.options, "footer-html" ) ){
+			options[ "footer-html" ] = _localizeHtml( options[ "footer-html" ] );
+			tmpFooterFile = "#getTempDir()#_#createUUID()#-footer.html";
+			fileWrite( tmpFooterFile, options[ "footer-html" ] );
+			options[ "footer-html" ] = tmpFooterFile;
 		}
 
 		var args = {
@@ -270,5 +272,18 @@ component accessors="true" extends="base" {
 			arrayAppend( parsed, " --#opt##len( options[opt] ) ? ' #options[opt]#' : '' #" );
 		}
 		return arrayToList( parsed, ' ' );
+	}
+
+	// html can be inline html, or a url. This will pull down the content and properly
+	// parse it for wkhtml consumption. Used for header/footer html.
+	private string function _localizeHtml( html ){
+		if( left( html, 4 ) == "http" ){
+			var remoteHtml = new Http( url = html ).send().getPrefix();
+			html = '<!doctype html>' & remoteHtml.fileContent;
+			if( listFirst( remoteHtml.mimeType, '/') == "image" ){
+				return '<!doctype html><img src="data:#remoteHtml.mimeType#;base64,#toBase64( remoteHtml.fileContent )#"/>';
+			}
+		}
+		return html;
 	}
 }
