@@ -225,6 +225,14 @@ component accessors="true" extends="base" {
 		if( isNull( arguments.url ) && isNull( html ) ){
 			throw("You need to provide either a URL or HTML string to convert to pdf");
 		}
+		// setup some wkthmltopdf default options
+		var defaults = {
+			 "viewport-size":"1200x1080"
+			,"image-quality":100
+			,"encoding": "utf-8"
+		};
+		structAppend( defaults, options, false );
+
 		if( len( trim( html ) ) ){
 			var tmpFile = "#getTempDir()#_#createUUID()#.html";
 			fileWrite( tmpFile, html );

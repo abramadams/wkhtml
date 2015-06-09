@@ -8,13 +8,13 @@
 			// url = 'https://wikidocs.adobe.com/wiki/display/coldfusionen/Home', // uncomment to test with url
 			html = trim(html.fileContent),
 			options = {
-				"viewport-size":"1200x1080"
+				"viewport-size":"1200x1080" // default
 				,"image-quality":100
 				,"margin-bottom": 25
 				,"margin-left": "5mm"
 				,"margin-right": "5mm"
 				,"margin-top": 45
-				,"orientation": "portrait"
+				,"orientation": "portrait" //default
 				,"encoding": "utf-8"
 				,"header-html": "http://www.sydneytripslipfallcompensation.com/images/header.jpg"
 				,"footer-html": "<footer style='text-align:center;'>This, my friend, is a cool footer.</footer>"
