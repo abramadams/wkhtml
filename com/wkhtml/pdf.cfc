@@ -270,7 +270,9 @@ component accessors="true" extends="base" {
 		if( len( trim( tmpFooterFile ) ) ){
 			fileDelete( tmpFooterFile );
 		}
-
+		if( writeToFile ){
+			results.metadata = getInfo( results.file );
+		}
 		return writeToFile ? results : fileReadBinary( results.file );
 	}
 
@@ -281,8 +283,8 @@ component accessors="true" extends="base" {
 	    var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
 	    var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
 	    var buff = createObject( "java","java.lang.StringBuffer" ).init();
-
-	    for( var i = 1; i <= pdfReader.getNumberOfPages(); i++ ){
+	    var pageCount = pdfReader.getNumberOfPages();
+	    for( var i = 1; i <= pageCount; i++ ){
 		    var streamBytes = pdfReader.getPageContent( i );
 		    var token = PRTokeniser.init( streamBytes );
 		    while (true) {
@@ -305,7 +307,8 @@ component accessors="true" extends="base" {
 	    var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
 	    var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
 	    var pages = [];
-	    for( var i = 1; i <= pdfReader.getNumberOfPages(); i++ ){
+	    var pageCount = pdfReader.getNumberOfPages();
+	    for( var i = 1; i <= pageCount; i++ ){
 		    var streamBytes = pdfReader.getPageContent( i );
 		    var token = PRTokeniser.init( streamBytes );
 		    while (true) {
@@ -326,7 +329,8 @@ component accessors="true" extends="base" {
 		}
 	    var pdfReader = createObject("java", "com.lowagie.text.pdf.PdfReader").init( pdfFile );
 	    var pages = [];
-	    for( var i = 1; i <= pdfReader.getNumberOfPages(); i++) {
+	    var pageCount = pdfReader.getNumberOfPages();
+	    for( var i = 1; i <= pageCount; i++) {
 	    	arrayAppend( pages, {
 	    			"pageSize": {
 	    							"height": pdfReader.getPageSize( i ).getHeight(),
@@ -342,6 +346,7 @@ component accessors="true" extends="base" {
 		return {
 			"info": pdfReader.getInfo(),
 			"pageCount": pdfReader.getNumberOfPages(),
+			"fileInfo": getFileInfo( pdfFile ),
 			"pages": pages
 		};
 	}
