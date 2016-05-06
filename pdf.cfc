@@ -259,7 +259,9 @@ component accessors="true" extends="base" {
 			destination: isNull( destination ) ? javaCast( "null", "" ) : destination,
 			timeout: 99999
 		};
+		// writeDump(args);abort;
 		var results = execute( argumentCollection:args );
+		// writeDump(results);abort;
 		// Clean up temp files
 		if( len( trim( html ) ) ){
 			fileDelete( tmpFile );
