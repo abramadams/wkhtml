@@ -270,8 +270,85 @@ component accessors="true" extends="base" {
 		if( len( trim( tmpFooterFile ) ) ){
 			fileDelete( tmpFooterFile );
 		}
-
+		if( writeToFile ){
+			results.metadata = getInfo( results.file );
+		}
 		return writeToFile ? results : fileReadBinary( results.file );
+	}
+
+	public string function getText( required any pdfFile ){
+		if( !fileExists( pdfFile ) ) {
+			throw( "File #pdfFile# does not exist!");
+		}
+	    var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
+	    var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
+	    var buff = createObject( "java","java.lang.StringBuffer" ).init();
+	    var pageCount = pdfReader.getNumberOfPages();
+	    for( var i = 1; i <= pageCount; i++ ){
+		    var streamBytes = pdfReader.getPageContent( i );
+		    var token = PRTokeniser.init( streamBytes );
+		    while (true) {
+				if ( !token.nextToken() ){
+					token.close();
+					break;
+				}
+				if( token.getTokenType() == PRTokeniser.TK_STRING ){
+					buff.append( token.getStringValue() );
+				}
+			}
+		}
+		return buff.toString();
+	}
+
+	public array function getPagedText( required any pdfFile ){
+		if( !fileExists( pdfFile ) ) {
+			throw( "File #pdfFile# does not exist!");
+		}
+	    var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
+	    var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
+	    var pages = [];
+	    var pageCount = pdfReader.getNumberOfPages();
+	    for( var i = 1; i <= pageCount; i++ ){
+		    var streamBytes = pdfReader.getPageContent( i );
+		    var token = PRTokeniser.init( streamBytes );
+		    while (true) {
+				if ( !token.nextToken() ){
+					token.close();
+					break;
+				}
+				if( token.getTokenType() == PRTokeniser.TK_STRING ){
+					arrayAppend( pages, token.getStringValue() );
+				}
+			}
+		}
+		return pages;
+	}
+	public function getInfo( required any pdfFile ){
+		if( !fileExists( pdfFile ) ) {
+			throw( "File #pdfFile# does not exist!");
+		}
+	    var pdfReader = createObject("java", "com.lowagie.text.pdf.PdfReader").init( pdfFile );
+	    var pages = [];
+	    var pageCount = pdfReader.getNumberOfPages();
+	    for( var i = 1; i <= pageCount; i++) {
+	    	arrayAppend( pages, {
+	    			"pageSize": {
+	    							"height": pdfReader.getPageSize( i ).getHeight(),
+	    							"width": pdfReader.getPageSize( i ).getWidth()
+	    						},
+	    			"pageRotation": pdfReader.getpageRotation( i ),
+	    			"pageSizeWithRotation": {
+	    				"height": pdfReader.getPageSizeWithRotation( i ).getHeight(),
+	    				"width": pdfReader.getPageSizeWithRotation( i ).getWidth()
+	    			}
+	    		});
+	    }
+		return {
+			"info": pdfReader.getInfo(),
+			"pageCount": pdfReader.getNumberOfPages(),
+			"fileInfo": getFileInfo( pdfFile ),
+			"pages": pages
+		};
 	}
 
 	private string function _parseOptions( struct options ){

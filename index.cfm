@@ -10,7 +10,7 @@
 			options = {
 				"viewport-size":"1200x1080" // default
 				,"image-quality":100
-				,"margin-bottom": 10
+				,"margin-bottom": 25
 				,"margin-left": "5mm"
 				,"margin-right": "5mm"
 				,"margin-top": 45
@@ -23,8 +23,16 @@
 			writeToFile = false, // true will write the file and return a struct containing the path (and other info)
 			destination = "#expandPath('.')#test.pdf"
 	);
-	// if you set writeToFile to true, uncomment this and comment out the cfheader/cfcontent block below
-	// writeDump(results);
+	// if you set writeToFile to true, uncomment the below and comment out the cfheader/cfcontent block below
+	/*
+	writeDump(results);
+	text = wkhtmltopdf.getText( results.file );
+	pagedText = wkhtmltopdf.getText( results.file );
+	writeDump({
+		"text":text,
+		"pagedText":pagedText
+	});
+	*/
 </cfscript>
 
 <cfheader name="Content-Disposition" value="inline; filename=test.pdf">
