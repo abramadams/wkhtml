@@ -20,7 +20,96 @@
 *   @author Abram Adams
 ******************************************************************************/
 --->
-<cfcomponent>
+<cfcomponent accessors="true">
+	<cfproperty name="binaryPath" type="string"/>
+	<cfproperty name="tempDir" type="string"/>
+	<cfproperty name="_MISSING_URL_HTML_MESSAGE" defaut="You need to provide either a URL or HTML string to convert"/>
+
+	<cfscript>
+		public function create( string url, string html, string destination, struct options = {}, boolean writeToFile = true ){
+			if( isNull( arguments.url ) && isNull( html ) ){
+				throw(get_MISSING_URL_HTML_MESSAGE());
+			}
+			// setup some wkthmltopdf default options
+			var defaults = {
+				 "viewport-size":"1200x1080"
+				,"image-quality":100
+				,"encoding": "utf-8"
+			};
+			structAppend( defaults, options, false );
+
+			if( len( trim( html ) ) ){
+				var tmpFile = "#getTempDir()#_#createUUID()#.html";
+				fileWrite( tmpFile, html );
+				arguments.url = tmpFile;
+			}
+			// This adds support for inline html injected as header/footer (opposed to passing as url)
+			var tmpHeaderFile = var tmpFooterFile = "";
+			if( structKeyExists( arguments.options, "header-html" ) ){
+				options[ "header-html" ] = _parseHtml( options[ "header-html" ] );
+				tmpHeaderFile = "#getTempDir()#_#createUUID()#-header.html";
+				fileWrite( tmpHeaderFile, options[ "header-html" ] );
+				options[ "header-html" ] = tmpHeaderFile;
+			}
+			if( structKeyExists( arguments.options, "footer-html" ) ){
+				options[ "footer-html" ] = _parseHtml( options[ "footer-html" ] );
+				tmpFooterFile = "#getTempDir()#_#createUUID()#-footer.html";
+				fileWrite( tmpFooterFile, options[ "footer-html" ] );
+				options[ "footer-html" ] = tmpFooterFile;
+			}
+
+			var args = {
+				name: getBinaryPath() ,
+				arguments: _parseOptions( options ) & " '" & arguments.url & "'" ,
+				destination: isNull( destination ) ? javaCast( "null", "" ) : destination,
+				timeout: 99999
+			};
+			// writeDump(args);abort;
+			var results = execute( argumentCollection:args );
+			// writeDump(results);abort;
+			// Clean up temp files
+			// if( len( trim( html ) ) ){
+			// 	fileDelete( tmpFile );
+			// }
+			// if( len( trim( tmpHeaderFile ) ) ){
+			// 	fileDelete( tmpHeaderFile );
+			// }
+			// if( len( trim( tmpFooterFile ) ) ){
+			// 	fileDelete( tmpFooterFile );
+			// }
+			if( writeToFile && listLast( getFileFromPath( results.file ), '.' ) == "pdf"){
+				results.metadata = getInfo( results.file );
+			}else{
+				results.metadata = getFileInfo( results.file );
+			}
+			results.metadata.html = html;
+			results.metadata.url = url;
+			return writeToFile ? results : fileReadBinary( results.file );
+		}
+
+		private string function _parseOptions( struct options ){
+			var parsed = [];
+			for( var opt in options ){
+				arrayAppend( parsed, " --#opt##len( options[opt] ) ? ' #options[opt]#' : '' #" );
+			}
+			return arrayToList( parsed, ' ' );
+		}
+
+		// html can be inline html, or a url. This will pull down the content and properly
+		// parse it for wkhtml consumption. Used for header/footer html.
+		private string function _parseHtml( html ){
+			if( left( html, 4 ) == "http" ){
+				var remoteHtml = new Http( url = html ).send().getPrefix();
+				html = '<!doctype html>' & remoteHtml.fileContent;
+				if( listFirst( remoteHtml.mimeType, '/') == "image" ){
+					return '<!doctype html><img src="data:#remoteHtml.mimeType#;base64,#toBase64( remoteHtml.fileContent )#"/>';
+				}
+			}
+			return html;
+		}
+
+	</cfscript>
+
 
 	<cffunction name="execute" access="public">
 		<cfargument name="destination" default="#getTempDirectory()#wkhtmltopdf-#hash(createUUID())#.pdf"/>
@@ -63,4 +152,5 @@
 		<cfreturn results />
 
 	</cffunction>
+
 </cfcomponent>

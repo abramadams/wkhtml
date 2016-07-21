@@ -21,16 +21,35 @@
 *   @author Abram Adams
 ******************************************************************************/
 component accessors="true" extends="base" {
-	property wkhtmltopdfPath;
+	property binaryPath;
 	property tempDir;
+	property _MISSING_URL_IMAGE_MESSAGE;
 
-	public function init( string wkhtmltopdfPath = "wkhtmltopdf", string tempDir = getTempDirectory() ){
+	public function init( string binaryPath = "wkhtmltopdf", string tempDir = getTempDirectory() ){
 		var tmpPath = "";
 		if( server.os.name == "Unix" || server.os.name == "Linux" ){
 			tmpPath = 'xvfb-run -a -s "-screen 0, 1024x768x24" ';
 		}
-		setWkhtmltopdfPath( tmpPath & wkhtmltopdfPath );
+		// Setup default binaryPath if not provided.
+		if( !len( trim( binaryPath ) ) ){
+			if( server.os.arch contains "64" ){
+				binaryPath = server.os.name contains "nix"
+					? expandPath('./com/wkhtml/bin/wkhtmltopdf-amd64')
+					: expandPath('./com/wkhtml/bin/win64/wkhtmltopdf-amd64.exe');
+			}else{
+				binaryPath = server.os.name contains "nix"
+					? expandPath('./com/wkhtml/bin/wkhtmltopdf-i386')
+					: expandPath('./com/wkhtml/bin/win64/wkhtmltopdf-i386.exe');
+			}
+		}
+		// If binary path doesn't exist, pass the binary name and assume
+		// it is in the computer's "PATH"
+		binaryPath = fileExists( binaryPath )
+					? binaryPath
+					: "wkhtmltopdf";
+		setBinaryPath( tmpPath & BinaryPath );
 		setTempDir( tempDir );
+		set_MISSING_URL_IMAGE_MESSAGE( "You need to provide either a URL or HTML string to convert to image" );
 	}
 
 /**
@@ -221,75 +240,28 @@ component accessors="true" extends="base" {
 *                                       printing the table of content
 *
 */
-	public function create( string url, string html, string destination, struct options = {}, boolean writeToFile = true ){
-		if( isNull( arguments.url ) && isNull( html ) ){
-			throw("You need to provide either a URL or HTML string to convert to pdf");
-		}
-		// setup some wkthmltopdf default options
-		var defaults = {
-			 "viewport-size":"1200x1080"
-			,"image-quality":100
-			,"encoding": "utf-8"
-		};
-		structAppend( defaults, options, false );
-
-		if( len( trim( html ) ) ){
-			var tmpFile = "#getTempDir()#_#createUUID()#.html";
-			fileWrite( tmpFile, html );
-			arguments.url = tmpFile;
-		}
-		// This adds support for inline html injected as header/footer (opposed to passing as url)
-		var tmpHeaderFile = var tmpFooterFile = "";
-		if( structKeyExists( arguments.options, "header-html" ) ){
-			options[ "header-html" ] = _parseHtml( options[ "header-html" ] );
-			tmpHeaderFile = "#getTempDir()#_#createUUID()#-header.html";
-			fileWrite( tmpHeaderFile, options[ "header-html" ] );
-			options[ "header-html" ] = tmpHeaderFile;
-		}
-		if( structKeyExists( arguments.options, "footer-html" ) ){
-			options[ "footer-html" ] = _parseHtml( options[ "footer-html" ] );
-			tmpFooterFile = "#getTempDir()#_#createUUID()#-footer.html";
-			fileWrite( tmpFooterFile, options[ "footer-html" ] );
-			options[ "footer-html" ] = tmpFooterFile;
-		}
-
-		var args = {
-			name: getWkhtmlToPdfPath() ,
-			arguments: _parseOptions( options ) & " '" & arguments.url & "'" ,
-			destination: isNull( destination ) ? javaCast( "null", "" ) : destination,
-			timeout: 99999
-		};
-		// writeDump(args);abort;
-		var results = execute( argumentCollection:args );
-		// writeDump(results);abort;
-		// Clean up temp files
-		if( len( trim( html ) ) ){
-			fileDelete( tmpFile );
-		}
-		if( len( trim( tmpHeaderFile ) ) ){
-			fileDelete( tmpHeaderFile );
-		}
-		if( len( trim( tmpFooterFile ) ) ){
-			fileDelete( tmpFooterFile );
-		}
-		if( writeToFile ){
-			results.metadata = getInfo( results.file );
-		}
-		return writeToFile ? results : fileReadBinary( results.file );
+	public function create(
+		string url,
+		string html,
+		string destination,
+		struct options = {},
+		boolean writeToFile = true
+	){
+		return super.create( argumentCollection:arguments );
 	}
 
 	public string function getText( required any pdfFile ){
 		if( !fileExists( pdfFile ) ) {
 			throw( "File #pdfFile# does not exist!");
 		}
-	    var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
-	    var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
-	    var buff = createObject( "java","java.lang.StringBuffer" ).init();
-	    var pageCount = pdfReader.getNumberOfPages();
-	    for( var i = 1; i <= pageCount; i++ ){
-		    var streamBytes = pdfReader.getPageContent( i );
-		    var token = PRTokeniser.init( streamBytes );
-		    while (true) {
+		var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
+		var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
+		var buff = createObject( "java","java.lang.StringBuffer" ).init();
+		var pageCount = pdfReader.getNumberOfPages();
+		for( var i = 1; i <= pageCount; i++ ){
+			var streamBytes = pdfReader.getPageContent( i );
+			var token = PRTokeniser.init( streamBytes );
+			while (true) {
 				if ( !token.nextToken() ){
 					token.close();
 					break;
@@ -306,14 +278,14 @@ component accessors="true" extends="base" {
 		if( !fileExists( pdfFile ) ) {
 			throw( "File #pdfFile# does not exist!");
 		}
-	    var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
-	    var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
-	    var pages = [];
-	    var pageCount = pdfReader.getNumberOfPages();
-	    for( var i = 1; i <= pageCount; i++ ){
-		    var streamBytes = pdfReader.getPageContent( i );
-		    var token = PRTokeniser.init( streamBytes );
-		    while (true) {
+		var pdfReader = createObject( "java", "com.lowagie.text.pdf.PdfReader" ).init( pdfFile );
+		var PRTokeniser = createObject( "java", "com.lowagie.text.pdf.PRTokeniser" );
+		var pages = [];
+		var pageCount = pdfReader.getNumberOfPages();
+		for( var i = 1; i <= pageCount; i++ ){
+			var streamBytes = pdfReader.getPageContent( i );
+			var token = PRTokeniser.init( streamBytes );
+			while (true) {
 				if ( !token.nextToken() ){
 					token.close();
 					break;
@@ -329,22 +301,24 @@ component accessors="true" extends="base" {
 		if( !fileExists( pdfFile ) ) {
 			throw( "File #pdfFile# does not exist!");
 		}
-	    var pdfReader = createObject("java", "com.lowagie.text.pdf.PdfReader").init( pdfFile );
-	    var pages = [];
-	    var pageCount = pdfReader.getNumberOfPages();
-	    for( var i = 1; i <= pageCount; i++) {
-	    	arrayAppend( pages, {
-	    			"pageSize": {
-	    							"height": pdfReader.getPageSize( i ).getHeight(),
-	    							"width": pdfReader.getPageSize( i ).getWidth()
-	    						},
-	    			"pageRotation": pdfReader.getpageRotation( i ),
-	    			"pageSizeWithRotation": {
-	    				"height": pdfReader.getPageSizeWithRotation( i ).getHeight(),
-	    				"width": pdfReader.getPageSizeWithRotation( i ).getWidth()
-	    			}
-	    		});
-	    }
+		var pdfReader = createObject("java", "com.lowagie.text.pdf.PdfReader").init( pdfFile );
+		var pages = [];
+		var pageCount = pdfReader.getNumberOfPages();
+		for( var i = 1; i <= pageCount; i++) {
+			arrayAppend( pages,
+				{
+					"pageSize": {
+						"height": pdfReader.getPageSize( i ).getHeight(),
+						"width": pdfReader.getPageSize( i ).getWidth()
+					},
+					"pageRotation": pdfReader.getpageRotation( i ),
+					"pageSizeWithRotation": {
+						"height": pdfReader.getPageSizeWithRotation( i ).getHeight(),
+						"width": pdfReader.getPageSizeWithRotation( i ).getWidth()
+					}
+				}
+			);
+		}
 		return {
 			"info": pdfReader.getInfo(),
 			"pageCount": pdfReader.getNumberOfPages(),
@@ -353,24 +327,83 @@ component accessors="true" extends="base" {
 		};
 	}
 
-	private string function _parseOptions( struct options ){
-		var parsed = [];
-		for( var opt in options ){
-			arrayAppend( parsed, " --#opt##len( options[opt] ) ? ' #options[opt]#' : '' #" );
-		}
-		return arrayToList( parsed, ' ' );
-	}
 
-	// html can be inline html, or a url. This will pull down the content and properly
-	// parse it for wkhtml consumption. Used for header/footer html.
-	private string function _parseHtml( html ){
-		if( left( html, 4 ) == "http" ){
-			var remoteHtml = new Http( url = html ).send().getPrefix();
-			html = '<!doctype html>' & remoteHtml.fileContent;
-			if( listFirst( remoteHtml.mimeType, '/') == "image" ){
-				return '<!doctype html><img src="data:#remoteHtml.mimeType#;base64,#toBase64( remoteHtml.fileContent )#"/>';
-			}
+	/**
+	*	string source required="true" hint="Path to the pdf you want to add content to.
+	*	string destination required="false" default="" hint="Path to the pdf you want to save as.
+	*	string image required="true" hint="Path to the image you want to add to the source pdf.
+	*	string pages required="false" default="1" hint="List of page numbers to add image to.
+	*	numeric bottom required="false" default="0" hint="Number of pixels from the bottom of the PDF to the bottom of the image.
+	*	numeric left required="false" default="0" hint="Number of pixels from the left of the PDF to the left of the image.
+	**/
+	public function addImage(
+		required string source,
+		string destination = "",
+		required string image,
+		string pages = 1,
+		numeric bottom = 0,
+		numeric left = 0
+	){
+
+		var LOCAL = {};
+
+		if( !len(trim(arguments.destination)) ){
+			 // Default to saving back to the original file
+			arguments.destination = arguments.source;
 		}
-		return html;
+
+
+		// We'll write the changes to a temporary file, then copy it back to the original file later.
+		// This prevents file access errors.
+
+		LOCAL.tmpDestination = getTempDirectory() & createUUID() & '-' & getFileFromPath(arguments.destination);
+
+
+		LOCAL.savedErrorMessage = "";
+		LOCAL.fullPathToInputFile = arguments.source;
+		LOCAL.fullPathToWatermark = arguments.image;
+		LOCAL.fullPathToOutputFile = LOCAL.tmpDestination;
+
+
+		try{
+
+			// create PdfReader instance to read in source pdf
+			LOCAL.pdfReader = createObject("java", "com.lowagie.text.pdf.PdfReader").init(LOCAL.fullPathToInputFile);
+			LOCAL.totalPages = pdfReader.getNumberOfPages();
+
+			// create PdfStamper instance to create new watermarked file
+			LOCAL.outStream = createObject("java", "java.io.FileOutputStream").init(LOCAL.fullPathToOutputFile);
+			LOCAL.pdfStamper = createObject("java", "com.lowagie.text.pdf.PdfStamper").init(LOCAL.pdfReader, LOCAL.outStream);
+
+			// Read in the watermark image
+			LOCAL.img = createObject("java", "com.lowagie.text.Image").getInstance(LOCAL.fullPathToWatermark);
+
+				// adding content to specific page
+			for( var pageNumber = 1; pageNumber <= pages; pageNumber++ ){
+				LOCAL.content = pdfStamper.getOverContent( javacast("int", pageNumber ) );
+				LOCAL.img.setAbsolutePosition(arguments.left, arguments.bottom); // (horizontal position, vertical position)
+				LOCAL.content.addImage(LOCAL.img);
+			}
+
+
+			// closing PdfStamper will generate the new PDF file
+			if( isDefined("LOCAL.pdfStamper") ){
+				LOCAL.pdfStamper.close();
+			}
+
+			if( isDefined("LOCAL.outStream") ){
+				LOCAL.outStream.close();
+			}
+
+			LOCAL.img = "";
+			lock timeout="3" name="#arguments.source#" type="exclusive"{
+				fileMove(LOCAL.tmpDestination,arguments.destination);
+			}
+			writeDump(local);abort;
+		} catch( any e ){
+				LOCAL.savedErrorMessage = e.message ;
+				writeDump( cfcatch );abort;
+		}
+
 	}
 }

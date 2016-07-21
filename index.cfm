@@ -1,4 +1,4 @@
-<cfscript>
+<!--- <cfscript>
 	// example init for windows server
 	// wkhtmltopdf = new com.wkhtml.wkhtmltopdf( expandPath('./bin/win64/wkhtmltoimage.exe') );
 	// Linux servers (at least ubuntu servers) need to run wkhtmltopdf through xvfb-run to get a simulated screen
@@ -28,4 +28,21 @@
 </cfscript>
 
 <cfheader name="Content-Disposition" value="inline; filename=test.pdf">
-<cfcontent type="application/pdf" file="#expandPath('.')#test.pdf">
+<cfcontent type="application/pdf" file="#expandPath('.')#test.pdf"> --->
+
+<cfscript>
+	wkhtmltoimage = new api.com.wkhtml.image( binaryPath = expandPath('./com/wkhtml/bin/wkhtmltoimage-amd64') );
+	html = new http( url = 'http://wwsires.com', resolveurl = true, charset = "utf-8" ).send().getPrefix();
+	results = wkhtmltoimage.create(
+		html = trim( html.fileContent ),
+		options = {
+				"quality" : 100,
+				"encoding" : "utf-8",
+				"transparent" : "",
+				"images": ""
+			},
+			writeToFile = false,
+			destination = "#getTempDirectory()#wkhtmltoimage-#hash(createUUID())#.png"
+	);
+	writeDump(results);
+</cfscript>
