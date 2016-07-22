@@ -9,11 +9,14 @@ Chances are, if you are on linux you already have wkhtmltopdf installed, however
 For other OS installation instructions, see http://wkhtmltopdf.org/.
 
 __Note__: Windows servers do not require additional software (other than wkhtmltopdf)
-
+__UPDATE__
+> you can pass in the `binaryPath` to the init methods of `pdf.cfc`/`image.cfc`.  This repo contains various Windows/Linux versions in the `/bin/` directory.
+> 
 Once you have wkhtmltopdf (_and xvfb if needed_), simply copy the com/wkhtml folder to wherever your components live.
 
 ##Usage
 Check out the `index.cfm` file for a basic sample usage. It looks something like:
+__HTML to PDF__
 ```javascript
 wkthmltopdf = new com.wkhtml.pdf(); 
 //if wkhtmltopdf executable is not in your system path, you will need to pass it in
@@ -40,3 +43,57 @@ results = wkhtmltopdf.create(
     );
 ```
 With the above code, the `results` variable will contain the actual pdf binary, to which you'd use cfheader/cfcontent to stream to the browser.
+
+__HTML to IMAGE__
+```javascript
+    wkhtmltoimage = new wkhtml.image( binaryPath = expandPath('./com/wkhtml/bin/wkhtmltoimage-amd64') );
+    html = new http( url = 'https://www.google.com', resolveurl = true, charset = "utf-8" ).send().getPrefix();
+    results = wkhtmltoimage.create(
+        html = trim( html.fileContent ),
+        options = {
+                "quality" : 100,
+                "encoding" : "utf-8",
+                "transparent" : "",
+                "images": ""
+            },
+            writeToFile = false, // true will write the file and return a struct containing the path (and other info)
+            destination = "#getTempDirectory()#wkhtmltoimage-#hash(createUUID())#.png"
+    );
+```
+Similar to the wkhtmltopdf, this will take an html string and convert it to an image (PNG).
+
+##PDF Utilities
+The `pdf.cfc` component also has methods to retrieve information about the pdf, as well as add an image to the pdf.  This can be used to overly custom html on top of a PDF, for example:
+```javascript
+public function addImageToPDF( pdfSource, html, pdfDestination ){
+    var wkhtmlpdf = wkhtml.pdf();
+    var wkhtmlimage = wkhtml.image();
+    var imageDestination = "#getTempDirectory()#wkhtmltoimage-#hash(createUUID())#.png";        
+    // Convert user provided HTML (i.e. content from an in-browser rich text editor) to a PNG
+    var renderedImage = wkhtmlimage.create(
+        html = html,
+        options = {
+                "quality" : 100,
+                "encoding" : "utf-8",
+                "transparent" : "", //NOTE blank values translate to commandline flags that do not accept values (i.e. --transparent --images)
+                "images": "",
+                "zoom": .65,
+                "crop-h": 400,
+                "crop-w": 400
+        },
+        writeToFile = true,
+        destination = imageDestination
+    );
+
+    wkhtmlpdf.addImage(
+                source = pdfSource,
+                destination = pdfDestination,
+                image = renderedImage.file,
+                left = 10, // pixesl from left of pdf
+                bottom = 100, // pixels from bottom of pdf
+                pages = 1 // List of page numbers to add image to
+            );
+}
+```
+
+There are many options for each of these two functions.  See the `pdf.cfc` and `image.cfc` files for specific options, or visit [wkhtmltopdf](http://wkhtmltopdf.org/) documentation regarding PDF generation and [wkhtmltoimage](http://madalgo.au.dk/~jakobt/wkhtmltoxdoc/wkhtmltoimage_0.10.0_rc2-doc.html) for documentation regarding IMAGE generation.

@@ -1,5 +1,5 @@
 /**
-*	Copyright (c) 2015, Abram Adams
+*	Copyright (c) 2016, Abram Adams
 *
 *	Licensed under the Apache License, Version 2.0 (the "License");
 *	you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 *	limitations under the License.
 *
 ******************************************************************************
-*   @version 0.0.1
+*   @version 0.1.0
 *   @dependencies wkhtmltopdf http://wkhtmltopdf.org/
 * 				  for linux distros, xvfb-run must also be installed
-*   @updated 6/3/2015
+*   @updated 7/22/2016
 *   @author Abram Adams
 ******************************************************************************/
 component accessors="true" extends="base" {

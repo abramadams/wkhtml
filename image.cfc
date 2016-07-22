@@ -14,11 +14,11 @@
 *	limitations under the License.
 *
 ******************************************************************************
-*   @version 0.0.1
+*   @version 0.1.0
 *   @dependencies wkhtmltoimage http://wkhtmltopdf.org/
 * 				  http://madalgo.au.dk/~jakobt/wkhtmltoxdoc/wkhtmltoimage_0.10.0_rc2-doc.html
 * 				  for linux distros, xvfb-run must also be installed
-*   @updated 7/19/2016
+*   @updated 7/22/2016
 *   @author Abram Adams
 ******************************************************************************/
 component accessors="true" extends="base" {
