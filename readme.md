@@ -1,5 +1,6 @@
 #WKHTML - CFC wrapper for wkhtmlto[pdf/image]
-This library is a simple wrapper for the [wkhtmltopdf](http://wkhtmltopdf.org/) command line tool. Currently only the _wkhtmltopdf_ tool is supported, but I plan to support wkhtmltoimage soon.
+This library is a simple wrapper for the [wkhtmltopdf](http://wkhtmltopdf.org/) command line tool.
+
 ##Installation
 First you need to install __wkhtmltopdf__.  The instructions will vary depending on your OS, but for those lucky enough to run Ubuntu servers, just do:
 
