@@ -34,7 +34,7 @@ component accessors="true" extends="base" {
 		if( !len( trim( binaryPath ) ) ){
 			if( server.os.arch contains "64" ){
 				binaryPath = server.os.name contains "nix"
-					? expandPath('./com/wkhtml/bin/wkhtmltopdf-amd64')
+					? expandPath('./com/wkhtml/bin/wkhtmltox/bin/wkhtmltopdf')
 					: expandPath('./com/wkhtml/bin/win64/wkhtmltopdf-amd64.exe');
 			}else{
 				binaryPath = server.os.name contains "nix"
@@ -385,7 +385,6 @@ component accessors="true" extends="base" {
 				LOCAL.content.addImage(LOCAL.img);
 			}
 
-
 			// closing PdfStamper will generate the new PDF file
 			if( isDefined("LOCAL.pdfStamper") ){
 				LOCAL.pdfStamper.close();
@@ -399,10 +398,10 @@ component accessors="true" extends="base" {
 			lock timeout="3" name="#arguments.source#" type="exclusive"{
 				fileMove(LOCAL.tmpDestination,arguments.destination);
 			}
-			writeDump(local);abort;
+			// writeDump(local);abort;
 		} catch( any e ){
-				LOCAL.savedErrorMessage = e.message ;
-				writeDump( cfcatch );abort;
+			LOCAL.savedErrorMessage = e.message ;
+			writeDump( cfcatch );abort;
 		}
 
 	}

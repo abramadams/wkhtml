@@ -35,7 +35,7 @@ component accessors="true" extends="base" {
 		if( !len( trim( binaryPath ) ) ){
 			if( server.os.arch contains "64" ){
 				binaryPath = server.os.name contains "nix"
-					? expandPath('./com/wkhtml/bin/wkhtmltoimage-amd64')
+					? expandPath('./com/wkhtml/bin/wkhtmltox/bin/wkhtmltoimage')
 					: expandPath('./com/wkhtml/bin/win64/wkhtmltoimage-amd64.exe');
 			}else{
 				binaryPath = server.os.name contains "nix"
