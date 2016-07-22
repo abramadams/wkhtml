@@ -63,7 +63,7 @@ __HTML to IMAGE__
 Similar to the wkhtmltopdf, this will take an html string and convert it to an image (PNG).
 
 ##PDF Utilities
-The `pdf.cfc` component also has methods to retrieve information about the pdf, as well as add an image to the pdf.  This can be used to overly custom html on top of a PDF, for example:
+The `pdf.cfc` component also has methods to retrieve information about the pdf(`getInfo`), as well as add an image to the pdf (`addImage`).  This can be used to overlay custom html on top of a PDF, for example:
 ```javascript
 public function addImageToPDF( pdfSource, html, pdfDestination ){
     var wkhtmlpdf = wkhtml.pdf();
@@ -84,7 +84,7 @@ public function addImageToPDF( pdfSource, html, pdfDestination ){
         writeToFile = true,
         destination = imageDestination
     );
-
+    // Adds image to PDF (will create or overwrite destination)
     wkhtmlpdf.addImage(
                 source = pdfSource,
                 destination = pdfDestination,
