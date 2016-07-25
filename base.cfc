@@ -68,15 +68,15 @@
 			var results = execute( argumentCollection:args );
 			// writeDump(results);abort;
 			// Clean up temp files
-			// if( len( trim( html ) ) ){
-			// 	fileDelete( tmpFile );
-			// }
-			// if( len( trim( tmpHeaderFile ) ) ){
-			// 	fileDelete( tmpHeaderFile );
-			// }
-			// if( len( trim( tmpFooterFile ) ) ){
-			// 	fileDelete( tmpFooterFile );
-			// }
+			if( len( trim( html ) ) ){
+				fileDelete( tmpFile );
+			}
+			if( len( trim( tmpHeaderFile ) ) ){
+				fileDelete( tmpHeaderFile );
+			}
+			if( len( trim( tmpFooterFile ) ) ){
+				fileDelete( tmpFooterFile );
+			}
 			if( writeToFile && listLast( getFileFromPath( results.file ), '.' ) == "pdf"){
 				results.metadata = getInfo( results.file );
 			}else{
