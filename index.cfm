@@ -39,7 +39,7 @@
 <cfcontent type="application/pdf" file="#expandPath('.')#test.pdf"> --->
 
 <cfscript>
-	wkhtmltoimage = new api.com.wkhtml.image( binaryPath = expandPath('./com/wkhtml/bin/wkhtmltoimage-amd64') );
+	wkhtmltoimage = new wkhtml.image( binaryPath = expandPath('./com/wkhtml/bin/wkhtmltoimage-amd64') );
 	html = new http( url = 'http://wwsires.com', resolveurl = true, charset = "utf-8" ).send().getPrefix();
 	results = wkhtmltoimage.create(
 		html = trim( html.fileContent ),

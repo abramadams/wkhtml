@@ -1,6 +1,6 @@
 <!---
 /**
-*	Copyright (c) 2015, Abram Adams
+*	Copyright (c) 2016, Abram Adams
 *
 *	Licensed under the Apache License, Version 2.0 (the "License");
 *	you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 *	limitations under the License.
 *
 ******************************************************************************
-*   @version 0.0.1
-*   @updated 6/3/2015
+*   @version 0.1.0
+*   @updated 7/22/2016
 *   @author Abram Adams
 ******************************************************************************/
 --->
@@ -64,9 +64,9 @@
 				destination: isNull( destination ) ? javaCast( "null", "" ) : destination,
 				timeout: 99999
 			};
-			// writeDump(args);abort;
+
 			var results = execute( argumentCollection:args );
-			// writeDump(results);abort;
+
 			// Clean up temp files
 			if( len( trim( html ) ) ){
 				fileDelete( tmpFile );
