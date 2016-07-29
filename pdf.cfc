@@ -25,7 +25,7 @@ component accessors="true" extends="base" {
 	property tempDir;
 	property _MISSING_URL_IMAGE_MESSAGE;
 
-	public function init( string binaryPath = "wkhtmltopdf", string tempDir = getTempDirectory() ){
+	public function init( string binaryPath = "", string tempDir = getTempDirectory() ){
 		var tmpPath = "";
 		if( server.os.name == "Unix" || server.os.name == "Linux" ){
 			tmpPath = 'xvfb-run -a -s "-screen 0, 1024x768x24" ';
