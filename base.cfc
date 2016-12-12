@@ -57,7 +57,6 @@
 				fileWrite( tmpFooterFile, options[ "footer-html" ] );
 				options[ "footer-html" ] = "'#tmpFooterFile#'";
 			}
-			options["replace"] = "'@page' [page]";
 
 			var args = {
 				name: getBinaryPath() ,
@@ -142,7 +141,7 @@
 			</cfif>
 			<cfcatch type="any">
 				<!--- <cfdump var="#[arguments,cfcatch]#" abort> --->
-				<cfthrow message="Error converting to PDF" detail="#cfcatch.detail#">
+				<!--- <cfthrow message="Error converting to PDF" detail="#cfcatch.detail#"> --->
 			</cfcatch>
 		</cftry>
 
