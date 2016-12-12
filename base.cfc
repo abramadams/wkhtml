@@ -49,14 +49,15 @@
 				options[ "header-html" ] = _parseHtml( options[ "header-html" ] );
 				tmpHeaderFile = "#getTempDir()#_#createUUID()#-header.html";
 				fileWrite( tmpHeaderFile, options[ "header-html" ] );
-				options[ "header-html" ] = tmpHeaderFile;
+				options[ "header-html" ] = "'#tmpHeaderFile#'";
 			}
 			if( structKeyExists( arguments.options, "footer-html" ) ){
 				options[ "footer-html" ] = _parseHtml( options[ "footer-html" ] );
 				tmpFooterFile = "#getTempDir()#_#createUUID()#-footer.html";
 				fileWrite( tmpFooterFile, options[ "footer-html" ] );
-				options[ "footer-html" ] = tmpFooterFile;
+				options[ "footer-html" ] = "'#tmpFooterFile#'";
 			}
+			options["replace"] = "'@page' [page]";
 
 			var args = {
 				name: getBinaryPath() ,
