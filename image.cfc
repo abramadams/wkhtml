@@ -109,7 +109,8 @@ component accessors="true" extends="base" {
 	public function create(
 			string url,
 			string html,
-			string destination = "#getTempDirectory()#wkhtmltoimage-#hash(createUUID())#.png",
+			string format = "jpg", // "png|jpg"
+			string destination = "#getTempDirectory()#wkhtmltoimage-#hash(createUUID())#.#format#",
 			struct options = {},
 			boolean writeToFile = true
 	){
