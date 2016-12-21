@@ -84,7 +84,11 @@
 			}
 			results.metadata.html = html;
 			results.metadata.url = url;
-			return writeToFile ? results : fileReadBinary( results.file );
+			var ret = writeToFile ? results : fileReadBinary( results.file );
+			if( !writeToFile ){
+				fileDelete( results.file );
+			}
+			return ret;
 		}
 
 		private string function _parseOptions( struct options ){
