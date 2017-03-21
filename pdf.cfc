@@ -342,7 +342,8 @@ component accessors="true" extends="base" {
 		required string image,
 		string pages = 1,
 		numeric bottom = 0,
-		numeric left = 0
+		numeric left = 0,
+		string pdfPathString = ""
 	){
 
 		var LOCAL = {};
@@ -355,15 +356,20 @@ component accessors="true" extends="base" {
 
 		// We'll write the changes to a temporary file, then copy it back to the original file later.
 		// This prevents file access errors.
+		var fileName = createUUID() & '-' & getFileFromPath(arguments.destination);
 
-		LOCAL.tmpDestination = getTempDirectory() & createUUID() & '-' & getFileFromPath(arguments.destination);
+		LOCAL.tmpDestination = getTempDirectory() & fileName;
 
+		if( pdfPathString == "" ){
+			LOCAL.fullPathToInputFile = arguments.source;
+		} else {
+			//This is done because the path changes at the end of the process for the previous image.
+			LOCAL.fullPathToInputFile = pdfPathString;
+		}
 
 		LOCAL.savedErrorMessage = "";
-		LOCAL.fullPathToInputFile = arguments.source;
 		LOCAL.fullPathToWatermark = arguments.image;
 		LOCAL.fullPathToOutputFile = LOCAL.tmpDestination;
-
 
 		try{
 
@@ -403,6 +409,6 @@ component accessors="true" extends="base" {
 			LOCAL.savedErrorMessage = e.message ;
 			writeDump( cfcatch );abort;
 		}
-
+		return arguments.destination;
 	}
 }
